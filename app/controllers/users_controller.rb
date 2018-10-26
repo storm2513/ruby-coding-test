@@ -21,29 +21,62 @@ class UsersController < ApplicationController
 
   # POST /users
   def create
-    @user = User.create(user_params)
-    redirect_to @user, notice: 'User was successfully created.'
+    @user = User.new(user_params)
+    ActiveRecord::Base.transaction do
+      if @user.save
+        set_roles
+        redirect_to @user, notice: 'User was successfully created.'
+      else
+        render action: :new
+      end
+    end
   end
 
   # PATCH/PUT /users/1
   def update
-    @user.update(user_params)
-    redirect_to @user, notice: 'User was successfully updated.'
+    ActiveRecord::Base.transaction do
+      if @user.update_attributes(user_params)
+        set_roles
+        redirect_to @user, notice: 'User was successfully updated.'
+      else
+        render action: :edit
+      end
+    end
   end
 
   # DELETE /users/1
   def destroy
-    @user.destroy unless @user.is_admin?
-    redirect_to users_url, notice: 'User was successfully destroyed.'
+    if user_destroyer.destroy
+      redirect_to users_url, notice: 'User was successfully destroyed.'
+    else
+      redirect_to users_url, notice: 'Cannot delete user: user is admin.'
+    end
   end
 
   private
 
+  def user_destroyer
+    @user_destroyer ||= UserDestroyerService.new(@user)
+  end
+
   def set_user
-    @user = User.where(id: params[:id]).first
+    @user = User.find(params[:id])
+  end
+
+  def admin?
+    ActiveModel::Type::Boolean.new.cast(params[:user][:admin])
+  end
+
+  def customer?
+    ActiveModel::Type::Boolean.new.cast(params[:user][:customer])
+  end
+
+  def set_roles
+    admin?    ? @user.grant(:admin)    : @user.revoke(:admin)
+    customer? ? @user.grant(:customer) : @user.revoke(:customer)
   end
 
   def user_params
-    params.require(:user).permit(:email, :firstname, :last_name)
+    params.require(:user).permit(:email, :first_name, :last_name)
   end
 end

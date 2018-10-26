@@ -1,0 +1,23 @@
+<h1>Email history for <%= @user.email %></h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Changed at</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @versions.each do |version| %>
+      <tr>
+        <td><%= version.object_changes['email'].last %></td>
+        <td><%= version.created_at %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'Back', users_path %>

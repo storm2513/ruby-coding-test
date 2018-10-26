@@ -17,13 +17,23 @@
   </div>
 
   <div class="field">
-    <%= form.label :firstname %>
-    <%= form.text_field :firstname, id: :user_firstname %>
+    <%= form.label :first_name %>
+    <%= form.text_field :first_name, id: :user_first_name %>
   </div>
 
   <div class="field">
     <%= form.label :last_name %>
     <%= form.text_field :last_name, id: :user_last_name %>
+  </div>
+
+  <div class="field">
+    <%= form.check_box :admin, checked: user.admin? %>
+    Administrator
+  </div>
+
+  <div class="field">
+    <%= form.check_box :customer, checked: user.customer? %>
+    Customer
   </div>
 
   <div class="actions">
